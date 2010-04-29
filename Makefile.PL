@@ -4,9 +4,10 @@ use Inline::MakeMaker;
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME              => 'Crypt::Subset::Publish',
-    VERSION_FROM      => 'lib/Crypt/Subset.pm', # finds $VERSION
+    VERSION_FROM      => 'Publish.pm', # finds $VERSION
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+#	OBJECT		=> q/Publish.o/,
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/Crypt/Subset.pm', # retrieve abstract from module
+      (ABSTRACT_FROM  => 'Publish.pm', # retrieve abstract from module
        AUTHOR         => 'Johanna Amann <ba@so.in.tum.de>') : ()),
 );
