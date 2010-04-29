@@ -1,0 +1,6 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Crypt-Subset.t
+lib/Crypt/Subset.pm
