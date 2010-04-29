@@ -1,4 +1,4 @@
-package Crypt::Subset::Publish;
+package Crypt::Subset;
 
 use 5.010000;
 use strict;
@@ -15,11 +15,13 @@ our @ISA = qw(Exporter);
 # This allows declaration	use Crypt::Subset ':all';
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
-our %EXPORT_TAGS = ( 'all' => [ qw(
-	
+our %EXPORT_TAGS = ( 'publish' => [ qw(
+	publish_new newFromFile printEcInformation generateCover printSDKeyList 
+	setTreeSecret revokeUser DoRevokeUser generateKeylist DoGenerateKeylist 
+	writeClientData writeServerData publish_DESTROY
 ) ] );
 
-our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
+our @EXPORT_OK = ( @{ $EXPORT_TAGS{'publish'} } );
 
 our @EXPORT = qw(
 	
@@ -30,7 +32,7 @@ our $VERSION = '0.01';
 
 use Inline C => 'DATA',
 	VERSION => '0.01',
-	NAME => 'Crypt::Subset::Publish',
+	NAME => 'Crypt::Subset',
 	LIBS => '-lsdtree';
 	
 sub revokeUser {
@@ -66,7 +68,7 @@ typedef struct {
 	void* object;
 } Publisher;
 
-SV* new(char * class) {
+SV* publish_new(char * class) {
 	Publisher* publisher;
 	SV* obj_ref = newSViv(0);
 	SV* obj = newSVrv(obj_ref, class);
@@ -144,9 +146,10 @@ void writeServerData(SV* obj, char * filename) {
 	fpublish_writeServerData(object, filename);
 }
 
-void DESTROY(SV* obj) {
+void publish_DESTROY(SV* obj) {
 	Publisher* publisher = ((Publisher*)SvIV(SvRV(obj)));
 	fpublish_free(publisher->object);
+	printf("Destroying \n");
 	Safefree(publisher);
 }
 
