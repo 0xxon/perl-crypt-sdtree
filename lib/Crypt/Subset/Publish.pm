@@ -29,11 +29,10 @@ our $VERSION = '0.01';
 
 
 use Inline C => 'DATA',
-#	VERSION => '0.01',
+	VERSION => '0.01',
 	NAME => 'Crypt::Subset::Publish',
-	LIBS => '-lsdtree',
-	INC => '';
-
+	LIBS => '-lsdtree';
+	
 sub revokeUser {
 	my ($self, $path, $depth) = @_;
 	die("Wrong depth") if ($depth >= 32);
