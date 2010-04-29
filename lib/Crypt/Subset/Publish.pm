@@ -35,18 +35,6 @@ use Inline C => 'DATA',
 	INC => '';
 
 
-#sub new {
-#	my $class = shift;
-#	my ($filename) = @_;
-#	my $self = { };
-#	
-#	if ( defined ( $filename ) ) {
-#
-#
-#	bless($self, $class);
-#	return $self;
-#}
-
 # Preloaded methods go here.
 
 1;
@@ -80,7 +68,41 @@ SV* new(char * class) {
 	return obj_ref;
 }
 
+SV* newFromFile(char * class, char * filename) {
+	Publisher* publisher;
+	SV* obj_ref = newSViv(0);
+	SV* obj = newSVrv(obj_ref, class);
 
+	New(42, publisher, 1, Publisher);
 
+	void* object = fpublish_create_from_file(filename);
+	publisher->object = object;
 
+	sv_setiv(obj, publisher);
+	SvREADONLY_on(obj);
+	return obj_ref;
+}
+
+void printEcInformation(SV* obj) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	fpublish_printEcInformation(object);
+}
+
+void generateCover(SV* obj) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	fpublish_generateCover(object);
+}
+
+void printSDKeyList(SV* obj) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	fpublish_printSDKeyList(object);
+}
+
+//void setTreeSecret();
+
+void DESTROY(SV* obj) {
+	Publisher* publisher = ((Publisher*)SvIV(SvRV(obj)));
+	fpublish_free(publisher->object);
+	Safefree(publisher);
+}
 
