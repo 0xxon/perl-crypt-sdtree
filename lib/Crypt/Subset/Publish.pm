@@ -34,6 +34,20 @@ use Inline C => 'DATA',
 	LIBS => '-lsdtree',
 	INC => '';
 
+sub revokeUser {
+	my ($self, $path, $depth) = @_;
+	die("Wrong depth") if ($depth >= 32);
+	die("Wrong key data") unless $path =~ m#^\d{32}$#;
+	DoRevokeUser(@_);
+	
+}
+
+sub generateKeylist {
+	my ($self, $path) = @_;
+	die("Wrong key data") unless $path =~ m#^\d{32}$#;
+	DoGenerateKeylist(@_);
+}
+
 
 # Preloaded methods go here.
 
@@ -98,7 +112,38 @@ void printSDKeyList(SV* obj) {
 	fpublish_printSDKeyList(object);
 }
 
-//void setTreeSecret();
+void setTreeSecret(SV* obj, SV* secret) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	
+	/* get string length */
+	STRLEN length;
+	char* data = SvPV(secret, length);
+	
+	fpublish_setTreeSecret(object, data, length);
+}
+
+void DoRevokeUser(SV* obj, char * dpath, int depth) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	tDPath p = StringToDoublePath(dpath);
+	p |= 0x1LL << ((2* ( 32 - depth) )-1);
+	fpublish_revokeuser(obj, p);
+}
+
+void DoGenerateKeylist(SV* obj, char * path) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	tPath p = StringToPath(path);
+	fpublish_generateKeylist(obj, p);
+}
+
+void writeClientData(SV* obj, char * filename) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	fpublish_writeClientData(object, filename);
+}
+
+void writeServerData(SV* obj, char * filename) {
+	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	fpublish_writeServerData(object, filename);
+}
 
 void DESTROY(SV* obj) {
 	Publisher* publisher = ((Publisher*)SvIV(SvRV(obj)));
