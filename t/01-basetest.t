@@ -6,13 +6,6 @@ use 5.010;
 
 use Test::More;  # tests => 9
 
-sub burp {
-    my( $file_name ) = shift ;
-    open( my $fh, ">$file_name" ) ||
-        die "can't create $file_name $!" ;
-    print $fh @_ ;
-}
-
 BEGIN {
 	use_ok('Crypt::Subset::Publish');
 	use_ok('Crypt::Subset::Subscribe');
@@ -21,20 +14,36 @@ BEGIN {
 my $p = Crypt::Subset::Publish->new();
 isa_ok($p, "Crypt::Subset::Publish");
 
+my $testdata = "Encrypt this, decrypt it, lalalalala";
+
+# create two pbases...
 $p->revokeUser("10000000000000000000000000000000");
 my $pbase = $p->getServerData;
-burp("pt2", $pbase);
+$p->revokeUser("00000000000000000000000000000001");
+my $pbase2 = $p->getServerData;
 
-#$p->generateKeylist("10000000000000000000000000000000");
+my $sender1 = Crypt::Subset::Publish->newFromData($pbase);
+isa_ok($sender1, "Crypt::Subset::Publish");
+my $sender2 = Crypt::Subset::Publish->newFromData($pbase2);
+isa_ok($sender2, "Crypt::Subset::Publish");
+
+$sender1->generateCover;
+$sender2->generateCover;
+my $block1 = $sender1->generateSDTreeBlock($testdata);
+my $block2 = $sender2->generateSDTreeBlock($testdata);
+isnt($block1, undef, "Not undef");
+isnt($block2, undef, "Not undef");
+
+
 $p->generateKeylist("00000000000000000000000000000001");
 my $cbase = $p->getClientData;
-$p->writeClientData("ctestdata");
-burp("ct2", $cbase);
 
-say "lala \n $cbase \n";
-say "Length: ".length $cbase;
-
-my $subscriber2 = Crypt::Subset::Subscribe->new("ctestdata");
 my $subscriber = Crypt::Subset::Subscribe->newFromClientData($cbase);
 isa_ok($subscriber, 'Crypt::Subset::Subscribe');
+
+my $decrypted = $subscriber->decrypt($block1);
+is($decrypted, $testdata, "Decrypted = origdata");
+
+my $decrypted2 = $subscriber->decrypt($block2);
+ok(!defined($decrypted2), "Cannot decrypt");
 

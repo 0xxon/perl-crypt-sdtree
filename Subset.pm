@@ -159,7 +159,6 @@ void DoRevokeUser(SV* obj, char * dpath, int depth) {
 
 void DoGenerateKeylist(SV* obj, char * path) {
 	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
-	printf("Generating for %s\n", path);
 	tPath p = StringToPath(path);
 	fpublish_generateKeylist(object, p);
 }
@@ -177,8 +176,6 @@ void writeServerData(SV* obj, char * filename) {
 SV* getClientData(SV* obj) {
 	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
 	fString reply = fpublish_getClientData(object);
-	reply.data[1]=128;
-	printf("Got client data with length %d, advertised as length %d\n", reply.length, strlen(reply.data));
 	SV* perlreply = newSVpv(reply.data, reply.length);
 	
 	return perlreply;
@@ -252,7 +249,6 @@ SV* newFromClientData(char* class, SV* data) {
 
 	STRLEN length;
 	char* s = SvPV(data, length);
-	printf("Data length: %d\n", length);
 	
 	void* object = fclient_create_from_data(s, length);
 	subscriber->object = object;
@@ -278,7 +274,6 @@ SV* decrypt(SV* obj, SV* message) {
 void subscribe_DESTROY(SV* obj) {
 	Subscriber* subscriber = ((Subscriber*)SvIV(SvRV(obj)));
 	fclient_free(subscriber->object);
-	printf("Destroying client \n");
 	Safefree(subscriber);
 }
 
