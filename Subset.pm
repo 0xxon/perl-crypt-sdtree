@@ -19,10 +19,10 @@ our %EXPORT_TAGS = ( 'publish' => [ qw(
 	publish_new newFromFile printEcInformation generateCover printSDKeyList 
 	setTreeSecret revokeUser DoRevokeUser generateKeylist DoGenerateKeylist 
 	writeClientData writeServerData publish_DESTROY generateSDTreeBlock
-	generateAESEncryptedBlock
+	generateAESEncryptedBlock newFromData getClientData getServerData
 ) ],
 	'subscribe' => [ qw( 
-	subscribe_new decrypt subscribe_DESTROY
+	subscribe_new decrypt subscribe_DESTROY newFromClientData
 	)] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'publish'} }, @{ $EXPORT_TAGS{'subscribe'} } );
@@ -41,9 +41,11 @@ use Inline C => 'DATA',
 	
 sub revokeUser {
 	my ($self, $path, $depth) = @_;
-	die("Wrong depth") if ($depth >= 32);
+	$depth //= 32;
+	die("Wrong depth") if ($depth > 32);
+        die("Wrong depth too small") if ($depth < 1);
 	die("Wrong key data") unless $path =~ m#^\d{32}$#;
-	DoRevokeUser(@_);
+	DoRevokeUser($self, $path, $depth);
 	
 }
 
@@ -149,14 +151,16 @@ void setTreeSecret(SV* obj, SV* secret) {
 void DoRevokeUser(SV* obj, char * dpath, int depth) {
 	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
 	tDPath p = StringToDoublePath(dpath);
-	p |= 0x1LL << ((2* ( 32 - depth) )-1);
-	fpublish_revokeuser(obj, p);
+	if ( depth < 32 ) 
+		p |= 0x1LL << ((2* ( 32 - depth) )-1);
+	fpublish_revokeuser(object, p);
 }
 
 void DoGenerateKeylist(SV* obj, char * path) {
 	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	printf("Generating for %s\n", path);
 	tPath p = StringToPath(path);
-	fpublish_generateKeylist(obj, p);
+	fpublish_generateKeylist(object, p);
 }
 
 void writeClientData(SV* obj, char * filename) {
@@ -188,7 +192,6 @@ SV* getServerData(SV* obj) {
 void publish_DESTROY(SV* obj) {
 	Publisher* publisher = ((Publisher*)SvIV(SvRV(obj)));
 	fpublish_free(publisher->object);
-	printf("Destroying \n");
 	Safefree(publisher);
 }
 
