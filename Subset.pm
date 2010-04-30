@@ -23,6 +23,7 @@ our %EXPORT_TAGS = ( 'publish' => [ qw(
 ) ],
 	'subscribe' => [ qw( 
 	subscribe_new decrypt subscribe_DESTROY newFromClientData
+	printEcInformation printSDKeyList
 	)] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'publish'} }, @{ $EXPORT_TAGS{'subscribe'} } );
@@ -176,7 +177,9 @@ void writeServerData(SV* obj, char * filename) {
 SV* getClientData(SV* obj) {
 	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
 	fString reply = fpublish_getClientData(object);
-	SV* perlreply = newSVpvn(reply.data, reply.length);
+	reply.data[1]=128;
+	printf("Got client data with length %d, advertised as length %d\n", reply.length, strlen(reply.data));
+	SV* perlreply = newSVpv(reply.data, reply.length);
 	
 	return perlreply;
 }
@@ -249,6 +252,7 @@ SV* newFromClientData(char* class, SV* data) {
 
 	STRLEN length;
 	char* s = SvPV(data, length);
+	printf("Data length: %d\n", length);
 	
 	void* object = fclient_create_from_data(s, length);
 	subscriber->object = object;
