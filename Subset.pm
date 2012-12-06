@@ -8,6 +8,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 
+
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
@@ -20,6 +21,7 @@ our %EXPORT_TAGS = ( 'publish' => [ qw(
 	setTreeSecret revokeUser DoRevokeUser generateKeylist DoGenerateKeylist 
 	writeClientData writeServerData publish_DESTROY generateSDTreeBlock
 	generateAESEncryptedBlock newFromData getClientData getServerData
+	setRevokelistInverted getRevokelistInverted clearRevokedUsers
 ) ],
 	'subscribe' => [ qw( 
 	subscribe_new decrypt subscribe_DESTROY newFromClientData
@@ -32,14 +34,8 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.01';
+our $VERSION = 0.04;
 
-
-use Inline C => 'DATA',
-	VERSION => '0.01',
-	NAME => 'Crypt::Subset',
-	LIBS => '-lsdtree';
-	
 sub revokeUser {
 	my ($self, $path, $depth) = @_;
 	$depth //= 32;
@@ -57,18 +53,16 @@ sub generateKeylist {
 }
 
 
-# Preloaded methods go here.
-
-1;
-
-__DATA__
-
 =pod
 
 =cut
 
-__C__
+use Inline C => Config =>
+	VERSION => '0.04',
+	NAME => 'Crypt::Subset',
+	LIBS => '-lsdtree';
 
+use Inline 'C' => <<'END_C';
 #include "sdtree.h"
 
 typedef struct {
@@ -80,12 +74,12 @@ SV* publish_new(char * class) {
 	SV* obj_ref = newSViv(0);
 	SV* obj = newSVrv(obj_ref, class);
 
-	New(42, publisher, 1, Publisher);
+	Newx(publisher, 1, Publisher);
 
 	void* object = fpublish_create();
 	publisher->object = object;
 
-	sv_setiv(obj, publisher);
+	sv_setiv(obj, PTR2IV(publisher));
 	SvREADONLY_on(obj);
 	return obj_ref;
 }
@@ -95,12 +89,12 @@ SV* newFromFile(char * class, char * filename) {
 	SV* obj_ref = newSViv(0);
 	SV* obj = newSVrv(obj_ref, class);
 
-	New(42, publisher, 1, Publisher);
+	Newx(publisher, 1, Publisher);
 
 	void* object = fpublish_create_from_file(filename);
 	publisher->object = object;
 
-	sv_setiv(obj, publisher);
+	sv_setiv(obj, PTR2IV(publisher));
 	SvREADONLY_on(obj);
 	return obj_ref;
 }
@@ -119,28 +113,46 @@ SV* newFromData(char * class, SV* data) {
 	void* object = fpublish_create_from_data(s, length);
 	publisher->object = object;
 
-	sv_setiv(obj, publisher);
+	sv_setiv(obj, PTR2IV(publisher));
 	SvREADONLY_on(obj);
 	return obj_ref;
 }
 
 void printEcInformation(SV* obj) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	fpublish_printEcInformation(object);
 }
 
+void clearRevokedUsers(SV* obj) {
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
+	fpublish_clearRevokedUsers(object);
+}
+
 void generateCover(SV* obj) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	fpublish_generateCover(object);
 }
 
+void setRevokelistInverted(SV* obj, unsigned int inverted) {
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
+	fpublish_setRevokelistInverted(object, inverted);
+}
+
+unsigned int getRevokelistInverted(SV* obj) {
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
+	unsigned int inverted = fpublish_getRevokelistInverted(object);
+
+	return inverted;
+}
+
+
 void printSDKeyList(SV* obj) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	fpublish_printSDKeyList(object);
 }
 
 void setTreeSecret(SV* obj, SV* secret) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	
 	/* get string length */
 	STRLEN length;
@@ -150,7 +162,7 @@ void setTreeSecret(SV* obj, SV* secret) {
 }
 
 void DoRevokeUser(SV* obj, char * dpath, int depth) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	tDPath p = StringToDoublePath(dpath);
 	if ( depth < 32 ) 
 		p |= 0x1LL << ((2* ( 32 - depth) )-1);
@@ -158,45 +170,47 @@ void DoRevokeUser(SV* obj, char * dpath, int depth) {
 }
 
 void DoGenerateKeylist(SV* obj, char * path) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	tPath p = StringToPath(path);
 	fpublish_generateKeylist(object, p);
 }
 
 void writeClientData(SV* obj, char * filename) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	fpublish_writeClientData(object, filename);
 }
 
 void writeServerData(SV* obj, char * filename) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	fpublish_writeServerData(object, filename);
 }
 
 SV* getClientData(SV* obj) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	fString reply = fpublish_getClientData(object);
 	SV* perlreply = newSVpv(reply.data, reply.length);
+	free(reply.data);
 	
 	return perlreply;
 }
 
 SV* getServerData(SV* obj) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	fString reply = fpublish_getServerData(object);
 	SV* perlreply = newSVpvn(reply.data, reply.length);
-	
+	free(reply.data);	
+
 	return perlreply;
 }
 
 void publish_DESTROY(SV* obj) {
-	Publisher* publisher = ((Publisher*)SvIV(SvRV(obj)));
+	Publisher* publisher = (INT2PTR(Publisher*,SvIV(SvRV(obj))));
 	fpublish_free(publisher->object);
 	Safefree(publisher);
 }
 
 SV* generateSDTreeBlock(SV* obj, SV* message) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	
 	/* get string length */
 	STRLEN length;
@@ -204,12 +218,13 @@ SV* generateSDTreeBlock(SV* obj, SV* message) {
 	
 	fString reply = fpublish_generateSDTreeBlock(object, data, length);
 	SV* perlreply = newSVpvn(reply.data, reply.length);
-	
+	free(reply.data);	
+
 	return perlreply;
 }
 
 SV* generateAESEncryptedBlock(SV* obj, SV* message) {
-	void* object = ((Publisher*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
 	
 	/* get string length */
 	STRLEN length;
@@ -217,7 +232,8 @@ SV* generateAESEncryptedBlock(SV* obj, SV* message) {
 	
 	fString reply = fpublish_generateAESEncryptedBlock(object, data, length);
 	SV* perlreply = newSVpvn(reply.data, reply.length);
-	
+	free(reply.data);	
+
 	return perlreply;
 }
 
@@ -235,7 +251,7 @@ SV* subscribe_new(char * class, char * filename) {
 	void* object = fclient_create(filename);
 	subscriber->object = object;
 
-	sv_setiv(obj, subscriber);
+	sv_setiv(obj, PTR2IV(subscriber));
 	SvREADONLY_on(obj);
 	return obj_ref;
 }
@@ -253,13 +269,13 @@ SV* newFromClientData(char* class, SV* data) {
 	void* object = fclient_create_from_data(s, length);
 	subscriber->object = object;
 
-	sv_setiv(obj, subscriber);
+	sv_setiv(obj, PTR2IV(subscriber));
 	SvREADONLY_on(obj);
 	return obj_ref;
 }
 
 SV* decrypt(SV* obj, SV* message) {
-	void* object = ((Subscriber*)SvIV(SvRV(obj)))->object;
+	void* object = (INT2PTR(Subscriber*, SvIV(SvRV(obj))))->object;
 	
 	/* get string length */
 	STRLEN length;
@@ -267,14 +283,19 @@ SV* decrypt(SV* obj, SV* message) {
 	
 	fString reply = fclient_decrypt(object, data, length);
 	SV* perlreply = newSVpvn(reply.data, reply.length);
-	
+	free(reply.data);	
+
 	return perlreply;
 }
 
 void subscribe_DESTROY(SV* obj) {
-	Subscriber* subscriber = ((Subscriber*)SvIV(SvRV(obj)));
+	Subscriber* subscriber = (INT2PTR(Subscriber*,SvIV(SvRV(obj))));
 	fclient_free(subscriber->object);
 	Safefree(subscriber);
 }
 
+END_C
 
+# Preloaded methods go here.
+
+1;

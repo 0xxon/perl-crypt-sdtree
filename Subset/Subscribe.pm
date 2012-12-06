@@ -6,6 +6,8 @@ use warnings;
 
 use Crypt::Subset qw(:subscribe);
 
+our $VERSION = $Crypt::Subset::VERSION;
+
 sub new {
 	subscribe_new(@_);
 }

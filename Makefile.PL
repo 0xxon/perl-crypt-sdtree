@@ -5,7 +5,10 @@ use Inline::MakeMaker;
 WriteMakefile(
     NAME              => 'Crypt::Subset',
     VERSION_FROM      => 'Subset.pm', # finds $VERSION
-    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+    PREREQ_PM         => {
+	    Exporter => 0,
+	    Inline => 0
+	    }, # e.g., Module::Name => 1.1
 #	OBJECT		=> q/Publish.o/,
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'Subset.pm', # retrieve abstract from module
