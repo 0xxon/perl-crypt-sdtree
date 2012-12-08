@@ -43,7 +43,6 @@ our @EXPORT = qw(
 	
 );
 
-
 sub revokeUser {
 	my ($self, $path, $depth) = @_;
 	$depth //= 32;
@@ -62,260 +61,51 @@ sub generateKeylist {
 
 =head1 NAME
 
-Crypt::SDTree - Subset Difference Encryption/Revocation Scheme implementation
+Crypt::SDTree - Subset Difference Encryption/Revocation Scheme 
 
 =head1 ABSTRACT
 
-Subset Difference Encryption/Revocation Scheme implementation
+Implementation of a broadcast encryption/revocation scheme
 
 =head1 DESCRIPTION
 
-Write me.
+This library implements a broadcast encryption and revocation scheme.
+The basic scheme that is implemented here was proposed by Naor et al.
+in the paper "Revocation and Tracing Schemes for Stateless Receivers".
 
-=begin comment
+To be more detailed, this module allows encryption of a message to a
+group of users, where a subset of this group is considered to be revoked.
+All non-revoked users will be able to decrypt the message, while the 
+revoked users will not. The receivers are stateless and do not have to 
+update any state from session to session. 
 
-use Inline C => Config =>
-	VERSION => '0.04',
-	NAME => 'Crypt::Subset',
-	LIBS => '-lsdtree';
+The functionality is split into two sub-packages. To encrypt or send data, 
+please refer to L<Crypt::SDTree::Publish>. To decrypt or receive data,
+please refer to L<Crypt::SDTree::Subscribe>.
 
-use Inline 'C' => <<'END_C';
-#include "sdtree.h"
+=head1 AUTHOR
 
-typedef struct {
-	void* object;
-} Publisher;
+Johanna Amann, E<lt>johanna@icir.orgE<gt>
 
-SV* publish_new(char * class) {
-	Publisher* publisher;
-	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
+=head1 COPYRIGHT AND LICENSE
 
-	Newx(publisher, 1, Publisher);
+Copyright (C) 2010-2012 by Johanna Amann
 
-	void* object = fpublish_create();
-	publisher->object = object;
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
 
-	sv_setiv(obj, PTR2IV(publisher));
-	SvREADONLY_on(obj);
-	return obj_ref;
-}
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
 
-SV* newFromFile(char * class, char * filename) {
-	Publisher* publisher;
-	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-	Newx(publisher, 1, Publisher);
-
-	void* object = fpublish_create_from_file(filename);
-	publisher->object = object;
-
-	sv_setiv(obj, PTR2IV(publisher));
-	SvREADONLY_on(obj);
-	return obj_ref;
-}
-
-SV* newFromData(char * class, SV* data) {
-	Publisher* publisher;
-	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
-
-	New(42, publisher, 1, Publisher);
-
-	/* get string length */
-	STRLEN length;
-	char* s = SvPV(data, length);
-	
-	void* object = fpublish_create_from_data(s, length);
-	publisher->object = object;
-
-	sv_setiv(obj, PTR2IV(publisher));
-	SvREADONLY_on(obj);
-	return obj_ref;
-}
-
-void printEcInformation(SV* obj) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fpublish_printEcInformation(object);
-}
-
-void clearRevokedUsers(SV* obj) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fpublish_clearRevokedUsers(object);
-}
-
-void generateCover(SV* obj) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fpublish_generateCover(object);
-}
-
-void setRevokelistInverted(SV* obj, unsigned int inverted) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fpublish_setRevokelistInverted(object, inverted);
-}
-
-unsigned int getRevokelistInverted(SV* obj) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	unsigned int inverted = fpublish_getRevokelistInverted(object);
-
-	return inverted;
-}
-
-
-void printSDKeyList(SV* obj) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fpublish_printSDKeyList(object);
-}
-
-void setTreeSecret(SV* obj, SV* secret) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	
-	/* get string length */
-	STRLEN length;
-	char* data = SvPV(secret, length);
-	
-	fpublish_setTreeSecret(object, data, length);
-}
-
-void DoRevokeUser(SV* obj, char * dpath, int depth) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	tDPath p = StringToDoublePath(dpath);
-	if ( depth < 32 ) 
-		p |= 0x1LL << ((2* ( 32 - depth) )-1);
-	fpublish_revokeuser(object, p);
-}
-
-void DoGenerateKeylist(SV* obj, char * path) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	tPath p = StringToPath(path);
-	fpublish_generateKeylist(object, p);
-}
-
-void writeClientData(SV* obj, char * filename) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fpublish_writeClientData(object, filename);
-}
-
-void writeServerData(SV* obj, char * filename) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fpublish_writeServerData(object, filename);
-}
-
-SV* getClientData(SV* obj) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fString reply = fpublish_getClientData(object);
-	SV* perlreply = newSVpv(reply.data, reply.length);
-	free(reply.data);
-	
-	return perlreply;
-}
-
-SV* getServerData(SV* obj) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	fString reply = fpublish_getServerData(object);
-	SV* perlreply = newSVpvn(reply.data, reply.length);
-	free(reply.data);	
-
-	return perlreply;
-}
-
-void publish_DESTROY(SV* obj) {
-	Publisher* publisher = (INT2PTR(Publisher*,SvIV(SvRV(obj))));
-	fpublish_free(publisher->object);
-	Safefree(publisher);
-}
-
-SV* generateSDTreeBlock(SV* obj, SV* message) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	
-	/* get string length */
-	STRLEN length;
-	char* data = SvPV(message, length);
-	
-	fString reply = fpublish_generateSDTreeBlock(object, data, length);
-	SV* perlreply = newSVpvn(reply.data, reply.length);
-	free(reply.data);	
-
-	return perlreply;
-}
-
-SV* generateAESEncryptedBlock(SV* obj, SV* message) {
-	void* object = (INT2PTR(Publisher*, SvIV(SvRV(obj))))->object;
-	
-	/* get string length */
-	STRLEN length;
-	char* data = SvPV(message, length);
-	
-	fString reply = fpublish_generateAESEncryptedBlock(object, data, length);
-	SV* perlreply = newSVpvn(reply.data, reply.length);
-	free(reply.data);	
-
-	return perlreply;
-}
-
-typedef struct {
-	void* object;
-} Subscriber;
-
-SV* subscribe_new(char * class, char * filename) {
-	Subscriber* subscriber;
-	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
-
-	New(42, subscriber, 1, Subscriber);
-
-	void* object = fclient_create(filename);
-	subscriber->object = object;
-
-	sv_setiv(obj, PTR2IV(subscriber));
-	SvREADONLY_on(obj);
-	return obj_ref;
-}
-
-SV* newFromClientData(char* class, SV* data) {
-	Subscriber* subscriber;
-	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
-
-	New(42, subscriber, 1, Subscriber);
-
-	STRLEN length;
-	char* s = SvPV(data, length);
-	
-	void* object = fclient_create_from_data(s, length);
-	subscriber->object = object;
-
-	sv_setiv(obj, PTR2IV(subscriber));
-	SvREADONLY_on(obj);
-	return obj_ref;
-}
-
-SV* decrypt(SV* obj, SV* message) {
-	void* object = (INT2PTR(Subscriber*, SvIV(SvRV(obj))))->object;
-	
-	/* get string length */
-	STRLEN length;
-	char* data = SvPV(message, length);
-	
-	fString reply = fclient_decrypt(object, data, length);
-	SV* perlreply = newSVpvn(reply.data, reply.length);
-	free(reply.data);	
-
-	return perlreply;
-}
-
-void subscribe_DESTROY(SV* obj) {
-	Subscriber* subscriber = (INT2PTR(Subscriber*,SvIV(SvRV(obj))));
-	fclient_free(subscriber->object);
-	Safefree(subscriber);
-}
-
-END_C
-
-=end comment
 
 =cut
-
 
 1;
