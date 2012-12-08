@@ -7,12 +7,12 @@ use 5.010;
 use Test::More tests => 10;
 
 BEGIN {
-	use_ok('Crypt::Subset::Publish');
-	use_ok('Crypt::Subset::Subscribe');
+	use_ok('Crypt::SDTree::Publish');
+	use_ok('Crypt::SDTree::Subscribe');
 }
 
-my $p = Crypt::Subset::Publish->new();
-isa_ok($p, "Crypt::Subset::Publish");
+my $p = Crypt::SDTree::Publish->new();
+isa_ok($p, "Crypt::SDTree::Publish");
 
 my $testdata = "Encrypt this, decrypt it, lalalalala";
 
@@ -22,10 +22,10 @@ my $pbase = $p->getServerData;
 $p->revokeUser("00000000000000000000000000000001");
 my $pbase2 = $p->getServerData;
 
-my $sender1 = Crypt::Subset::Publish->newFromData($pbase);
-isa_ok($sender1, "Crypt::Subset::Publish");
-my $sender2 = Crypt::Subset::Publish->newFromData($pbase2);
-isa_ok($sender2, "Crypt::Subset::Publish");
+my $sender1 = Crypt::SDTree::Publish->newFromData($pbase);
+isa_ok($sender1, "Crypt::SDTree::Publish");
+my $sender2 = Crypt::SDTree::Publish->newFromData($pbase2);
+isa_ok($sender2, "Crypt::SDTree::Publish");
 
 $sender1->generateCover;
 $sender2->generateCover;
@@ -38,8 +38,8 @@ isnt($block2, undef, "Not undef");
 $p->generateKeylist("00000000000000000000000000000001");
 my $cbase = $p->getClientData;
 
-my $subscriber = Crypt::Subset::Subscribe->newFromClientData($cbase);
-isa_ok($subscriber, 'Crypt::Subset::Subscribe');
+my $subscriber = Crypt::SDTree::Subscribe->newFromClientData($cbase);
+isa_ok($subscriber, 'Crypt::SDTree::Subscribe');
 
 my $decrypted = $subscriber->decrypt($block1);
 is($decrypted, $testdata, "Decrypted = origdata");

@@ -1,12 +1,12 @@
-package Crypt::Subset::Subscribe;
+package Crypt::SDTree::Subscribe;
 
 use 5.010000;
 use strict;
 use warnings;
 
-use Crypt::Subset qw(:subscribe);
+use Crypt::SDTree qw(:subscribe);
 
-our $VERSION = $Crypt::Subset::VERSION;
+our $VERSION = '0.01';
 
 sub new {
 	subscribe_new(@_);

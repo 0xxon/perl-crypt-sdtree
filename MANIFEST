@@ -1,9 +1,0 @@
-Changes
-Makefile.PL
-MANIFEST
-README
-Subset.pm
-Subset/Publish.pm
-Subset/Subscribe.pm
-t/01-basetest.t
-t/Crypt-Subset.t

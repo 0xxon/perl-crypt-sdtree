@@ -1,4 +1,4 @@
-package Crypt::Subset;
+package Crypt::SDTree;
 
 use 5.010000;
 use strict;
@@ -7,6 +7,7 @@ use warnings;
 require Exporter;
 
 our @ISA = qw(Exporter);
+our $VERSION = 0.01;
 
 
 # Items to export into callers namespace by default. Note: do not export
@@ -34,7 +35,6 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = 0.04;
 
 sub revokeUser {
 	my ($self, $path, $depth) = @_;
@@ -52,10 +52,19 @@ sub generateKeylist {
 	DoGenerateKeylist(@_);
 }
 
+=head1 NAME
 
-=pod
+Crypt::SDTree - Subset Difference Encryption/Revocation Scheme implementation
 
-=cut
+=head1 ABSTRACT
+
+Subset Difference Encryption/Revocation Scheme implementation
+
+=head1 DESCRIPTION
+
+Write me.
+
+=begin comment
 
 use Inline C => Config =>
 	VERSION => '0.04',
@@ -296,6 +305,9 @@ void subscribe_DESTROY(SV* obj) {
 
 END_C
 
-# Preloaded methods go here.
+=end comment
+
+=cut
+
 
 1;

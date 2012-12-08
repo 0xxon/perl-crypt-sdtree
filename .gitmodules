@@ -1,0 +1,3 @@
+[submodule "sdtree"]
+	path = sdtree
+	url = git://github.com/0xxon/sdtree.git

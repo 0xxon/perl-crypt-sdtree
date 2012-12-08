@@ -1,13 +1,12 @@
-package Crypt::Subset::Publish;
+package Crypt::SDTree::Publish;
 
 use 5.010000;
 use strict;
 use warnings;
 
+use Crypt::SDTree qw(:publish);
 
-use Crypt::Subset qw(:publish);
-
-our $VERSION = $Crypt::Subset::VERSION;
+our $VERSION = '0.01';
 
 sub new {
 	publish_new(@_);
