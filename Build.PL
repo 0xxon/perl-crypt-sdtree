@@ -9,6 +9,7 @@ my $builder = Module::Build->new(
 	dist_author => 'Johanna Amann <johanna@icir.org>',
 	include_dirs => 'sdtree/lib',
 	c_source => 'sdtree/lib',
+	extra_linker_flags => '-lcrypto',
 );
 
 

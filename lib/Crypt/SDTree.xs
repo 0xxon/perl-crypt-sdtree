@@ -7,6 +7,20 @@ typedef struct {
 	void* object;
 } Publisher;
 
+SV* publish_new(char * class) {
+	Publisher* publisher;
+	SV* obj_ref = newSViv(0);
+	SV* obj = newSVrv(obj_ref, class);
+
+	Newx(publisher, 1, Publisher);
+
+	void* object = fpublish_create();
+	publisher->object = object;
+
+	sv_setiv(obj, PTR2IV(publisher));
+	SvREADONLY_on(obj);
+	return obj_ref;
+}
 
 SV* newFromFile(char * class, char * filename) {
 	Publisher* publisher;

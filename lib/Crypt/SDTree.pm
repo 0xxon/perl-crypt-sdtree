@@ -9,6 +9,14 @@ require Exporter;
 our @ISA = qw(Exporter);
 our $VERSION = 0.01;
 
+BOOT_XS: {
+  require DynaLoader;
+
+  # DynaLoader calls dl_load_flags as a static method.
+  *dl_load_flags = DynaLoader->can('dl_load_flags');
+
+  do {__PACKAGE__->can('bootstrap') || \&DynaLoader::bootstrap}->(__PACKAGE__, $VERSION);
+}
 
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
