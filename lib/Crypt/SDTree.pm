@@ -83,6 +83,14 @@ The functionality is split into two sub-packages. To encrypt or send data,
 please refer to L<Crypt::SDTree::Publish>. To decrypt or receive data,
 please refer to L<Crypt::SDTree::Subscribe>.
 
+Please note that this module has not been reviewed by anyone other than
+myself. I am not sure that it actually is secure - while the theoretical
+basis should be sound it might leak key material or have other implementation
+defects.
+
+Hence, please consult a cryptographer before using this for anything that
+is actually important. 
+
 =head1 AUTHOR
 
 Johanna Amann, E<lt>johanna@icir.orgE<gt>
