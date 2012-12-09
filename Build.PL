@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Module::Build;
+use ExtUtils::CppGuess;
 
 BEGIN {
   unless (`pkg-config --modversion openssl`) {
@@ -13,16 +14,20 @@ BEGIN {
 my $cflags = `pkg-config --cflags openssl`;
 my $ldflags = `pkg-config --libs openssl`;
 
+my $guess = ExtUtils::CppGuess->new;
+$guess->add_extra_compiler_flags($cflags);
+$guess->add_extra_linker_flags($ldflags);
+
 my $builder = Module::Build->new(
+	$guess->module_build_options,
 	module_name => 'Crypt::SDTree',
 	license => 'lgpl',
 	dist_author => 'Johanna Amann <johanna@icir.org>',
 	include_dirs => 'sdtree/lib',
 	c_source => 'sdtree/lib',
-	extra_linker_flags => $ldflags,
-	extra_compiler_flags => $cflags,
 	build_requires => {
 		'ExtUtils::CBuilder' => 0,
+		'ExtUtils::CppGuess' => 0.07,
 	},
 	requires => {
 		perl => '5.10.1',

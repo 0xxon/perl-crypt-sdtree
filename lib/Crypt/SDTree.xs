@@ -7,10 +7,10 @@ typedef struct {
 	void* object;
 } Publisher;
 
-SV* publish_new(char * class) {
+SV* publish_new(char * classname) {
 	Publisher* publisher;
 	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
+	SV* obj = newSVrv(obj_ref, classname);
 
 	Newx(publisher, 1, Publisher);
 
@@ -22,10 +22,10 @@ SV* publish_new(char * class) {
 	return obj_ref;
 }
 
-SV* newFromFile(char * class, char * filename) {
+SV* newFromFile(char * classname, char * filename) {
 	Publisher* publisher;
 	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
+	SV* obj = newSVrv(obj_ref, classname);
 
 	Newx(publisher, 1, Publisher);
 
@@ -37,10 +37,10 @@ SV* newFromFile(char * class, char * filename) {
 	return obj_ref;
 }
 
-SV* newFromData(char * class, SV* data) {
+SV* newFromData(char * classname, SV* data) {
 	Publisher* publisher;
 	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
+	SV* obj = newSVrv(obj_ref, classname);
 
 	New(42, publisher, 1, Publisher);
 
@@ -179,10 +179,10 @@ typedef struct {
 	void* object;
 } Subscriber;
 
-SV* subscribe_new(char * class, char * filename) {
+SV* subscribe_new(char * classname, char * filename) {
 	Subscriber* subscriber;
 	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
+	SV* obj = newSVrv(obj_ref, classname);
 
 	New(42, subscriber, 1, Subscriber);
 
@@ -194,10 +194,10 @@ SV* subscribe_new(char * class, char * filename) {
 	return obj_ref;
 }
 
-SV* newFromClientData(char* class, SV* data) {
+SV* newFromClientData(char* classname, SV* data) {
 	Subscriber* subscriber;
 	SV* obj_ref = newSViv(0);
-	SV* obj = newSVrv(obj_ref, class);
+	SV* obj = newSVrv(obj_ref, classname);
 
 	New(42, subscriber, 1, Subscriber);
 
@@ -219,7 +219,7 @@ SV* decrypt(SV* obj, SV* message) {
 	STRLEN length;
 	char* data = SvPV(message, length);
 	
-	fString reply = fclient_decrypt(object, data, length);
+	fString reply = fclient_decrypt((char*) object, data, length);
 	SV* perlreply = newSVpvn(reply.data, reply.length);
 	free(reply.data);	
 
@@ -228,7 +228,7 @@ SV* decrypt(SV* obj, SV* message) {
 
 void subscribe_DESTROY(SV* obj) {
 	Subscriber* subscriber = (INT2PTR(Subscriber*,SvIV(SvRV(obj))));
-	fclient_free(subscriber->object);
+	fclient_free((char*) subscriber->object);
 	Safefree(subscriber);
 }
 
@@ -239,17 +239,17 @@ PROTOTYPES: DISABLE
 
 
 SV *
-publish_new (class)
-	char *	class
+publish_new (classname)
+	char *	classname
 
 SV *
-newFromFile (class, filename)
-	char *	class
+newFromFile (classname, filename)
+	char *	classname
 	char *	filename
 
 SV *
-newFromData (class, data)
-	char *	class
+newFromData (classname, data)
+	char *	classname
 	SV *	data
 
 void
@@ -458,13 +458,13 @@ generateAESEncryptedBlock (obj, message)
 	SV *	message
 
 SV *
-subscribe_new (class, filename)
-	char *	class
+subscribe_new (classname, filename)
+	char *	classname
 	char *	filename
 
 SV *
-newFromClientData (class, data)
-	char *	class
+newFromClientData (classname, data)
+	char *	classname
 	SV *	data
 
 SV *

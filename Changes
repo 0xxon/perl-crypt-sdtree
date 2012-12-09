@@ -1,8 +1,16 @@
 Revision history for Perl extension Crypt::SDTree.
 
+0.02
+- move to c++ compiler (using ExtUtils::CppGuess
+- remove c++ keywords from xs
+
 0.01
 - added clearRevokedUsers function
 - added keylist inversion
+- convert to Module::Build
+- move from inline to plain XS
+- add all documentation
+- tons of stuff I forgot
 
 0.00  Wed Apr 28 15:34:47 2010
 - original version; created by h2xs 1.23 with options
