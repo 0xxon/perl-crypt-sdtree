@@ -11,6 +11,11 @@ BEGIN {
   }
 }
 
+if ( `openssl ec -help 2>&1` =~ m#Error# ) {
+	warn "\nOpenSSL without ec-support, bailing out...\n";
+	exit 0;
+}
+
 my $cflags = `pkg-config --cflags openssl`;
 my $ldflags = `pkg-config --libs openssl`;
 
