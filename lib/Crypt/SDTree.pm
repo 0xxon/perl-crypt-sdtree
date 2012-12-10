@@ -1,13 +1,14 @@
 package Crypt::SDTree;
 
-use 5.010000;
+use 5.10.1;
 use strict;
 use warnings;
 
 require Exporter;
 
+our $VERSION = '0.03_01';
+
 our @ISA = qw(Exporter);
-our $VERSION = 0.02;
 
 BOOT_XS: {
   require DynaLoader;

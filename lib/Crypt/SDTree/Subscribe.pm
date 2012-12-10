@@ -6,7 +6,7 @@ use warnings;
 
 use Crypt::SDTree qw(:subscribe);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03_01';
 
 sub new {
 	subscribe_new(@_);
