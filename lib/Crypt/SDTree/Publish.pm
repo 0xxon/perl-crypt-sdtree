@@ -1,12 +1,11 @@
 package Crypt::SDTree::Publish;
 
-use 5.010000;
 use strict;
 use warnings;
 
 use Crypt::SDTree qw(:publish);
 
-our $VERSION = '0.03_01';
+our $VERSION = '0.03_02';
 
 sub new {
 	publish_new(@_);
@@ -21,8 +20,6 @@ sub DESTROY {
 Crypt::SDTree::Publish - Create Broadcast Messages
 
 =head1 SYNOPSIS
-
-  use 5.10.1;
 
   use Crypt::SDTree::Publish;
 

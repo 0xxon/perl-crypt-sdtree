@@ -2,9 +2,11 @@ Revision history for Perl extension Crypt::SDTree.
 
 0.03
 - check for ec-support in OpenSSL
+- add ExtUtils::CppGuess to configure-requires
+- accept perls as low as 5.8.9
 
 0.02
-- move to c++ compiler (using ExtUtils::CppGuess
+- move to c++ compiler (using ExtUtils::CppGuess)
 - remove c++ keywords from xs
 
 0.01

@@ -1,12 +1,11 @@
 package Crypt::SDTree;
 
-use 5.10.1;
 use strict;
 use warnings;
 
 require Exporter;
 
-our $VERSION = '0.03_01';
+our $VERSION = '0.03_02';
 
 our @ISA = qw(Exporter);
 

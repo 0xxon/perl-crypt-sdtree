@@ -34,8 +34,11 @@ my $builder = Module::Build->new(
 		'ExtUtils::CBuilder' => 0,
 		'ExtUtils::CppGuess' => 0.07,
 	},
+	configure_requires => {
+		'ExtUtils::CppGuess' => 0.07,
+	},
 	requires => {
-		perl => '5.10.1',
+		perl => '5.8.9',
 	},
 	meta_merge => {
 		resources => {
