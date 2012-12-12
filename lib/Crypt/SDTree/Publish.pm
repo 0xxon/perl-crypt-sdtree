@@ -5,7 +5,7 @@ use warnings;
 
 use Crypt::SDTree qw(:publish);
 
-our $VERSION = '0.03_02';
+our $VERSION = '0.03';
 
 sub new {
 	publish_new(@_);

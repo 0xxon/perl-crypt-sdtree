@@ -2,3 +2,5 @@ language: perl
 perl:
  - "5.10"
  - "5.16"
+before_script:
+ - cpanm ExtUtils::CppGuess
